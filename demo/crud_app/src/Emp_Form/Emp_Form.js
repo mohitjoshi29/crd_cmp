@@ -3,6 +3,7 @@ import Swal from 'sweetalert2'
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // import './Emp_Form.css';
 import './Emp_Form.css';
 import { useEffect, useState } from 'react';
@@ -10,8 +11,10 @@ import axios from 'axios';
 import "bootstrap"
 import { Modal } from 'bootstrap';
 import * as bootstrap from 'bootstrap';
-import { useParams } from 'react-router-dom';
+import { Form, Link, useParams, useNavigate } from 'react-router-dom';
+import CrdTask from '../CrdTask/CrdTask';
 window.bootstrap = bootstrap;
+// import { useNavigate } from 'react-router-dom';
 
 
 // import 'sweetalert2/src/sweetalert2.scss'
@@ -35,6 +38,12 @@ function Emp_Form() {
 
     const [searchQuery, setSearchQuery] = useState('');
 
+    const userNavigat = useNavigate();
+    const GotoComp = () => {
+        userNavigat('/')
+    }
+
+
     // display search icon...
     // const [disbox, setDisbox] = useState(false);
     // const ShowSearchBox = () => {
@@ -45,7 +54,7 @@ function Emp_Form() {
     // }
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemPerPage = 8
+    const itemPerPage = 5;
     let getpageno = searchState ? Math.ceil(filteredData.length / itemPerPage) : Math.ceil(data.length / itemPerPage)
 
     // let PageNumber = [];
@@ -55,17 +64,44 @@ function Emp_Form() {
     //     }
     // }
 
-    let PageNumber = [], i = 1;
-  
-    while (i <= getpageno) {
-      if (i <= 3 ||i >=getpageno - 2||i >= currentPage - 1 && i <= currentPage + 1) {
-        PageNumber.push(i);
-        i++;
-      } else {
-        PageNumber.push(<div>...</div>);
-        i = i < currentPage ? currentPage - 1 : getpageno - 2;
-      }
+    // let PageNumber = [], i = 1;
+
+    // while (i <= getpageno) {
+    //     if (i <= 3 || i >= getpageno - 2 || i >= currentPage - 1 && i <= currentPage + 1) {
+    //         PageNumber.push(i);
+    //         i++;
+    //     } else {
+    //         PageNumber.push(<div>...</div>);
+    //         i = i < currentPage ? currentPage - 1 : getpageno - 2;
+    //     }
+    // }
+
+    let PageNumber = [];
+    if (getpageno <= 7) {
+        for (let i = 1; i <= getpageno; i++) {
+            PageNumber.push(i);
+        }
+    } else {
+        if (currentPage <= 4) {
+            for (let i = 1; i <= 5; i++) {
+                PageNumber.push(i);
+            }
+            PageNumber.push('...', getpageno);
+        } else if (currentPage > getpageno - 4) {
+            PageNumber.push(1, '...');
+            for (let i = getpageno - 4; i <= getpageno; i++) {
+                PageNumber.push(i);
+            }
+        } else {
+            PageNumber.push(1, '...');
+            // PageNumber.push(1);
+            for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                PageNumber.push(i);
+            }
+            PageNumber.push('...', getpageno);
+        }
     }
+
 
 
     let handleClick = (page) => {
@@ -267,7 +303,7 @@ function Emp_Form() {
                             </div> */}
                             {/* <!-- Button trigger modal --> */}
                             <div className='col-sm-12 col-md-6 col-lg-6'>
-                                <button type="button" id='nav-btn' class="btn" style={{backgroundColor:'white',color:'black',fontFamily:'Arial'}} data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                <button type="button" id='nav-btn' class="btn" style={{ backgroundColor: 'white', color: 'black', fontFamily: 'Arial' }} data-bs-toggle="modal" data-bs-target="#exampleModal">
                                     Add Employee
                                 </button>
 
@@ -324,11 +360,11 @@ function Emp_Form() {
                                     </div>
                                 </div>
                             </div>
-                            <div className='col-sm-12 col-md-6 col-lg-6' style={{marginTop:'5px'}}>
-                                    <div className='search-btn container' style={{marginTop:'10px'}}>
-                                        <input className='form-control border-primary text-primary' type="text" id="site-search" onChange={searchData} placeholder='Search Data' /><SearchIcon style={{ width: '30px', height: '30px', marginTop: '5px', marginLeft: '-30px' }} />
-                                        <hr className='hr hr-primary' />
-                                    </div>
+                            <div className='col-sm-12 col-md-6 col-lg-6' style={{ marginTop: '5px' }}>
+                                <div className='search-btn container' style={{ marginTop: '10px' }}>
+                                    <input className='form-control border-primary text-primary' type="text" id="site-search" onChange={searchData} placeholder='Search Data' /><SearchIcon style={{ width: '30px', height: '30px', marginTop: '5px', marginLeft: '-30px' }} />
+                                    <hr className='hr hr-primary' />
+                                </div>
                             </div>
                         </div >
                     </nav >
@@ -346,7 +382,7 @@ function Emp_Form() {
                 {/* table data show start */}
                 < div className='container' id='show-data' >
                     <table className='table'>
-                        <thead style={{backgroundColor:'#73DEDD'}}>
+                        <thead style={{ backgroundColor: '#73DEDD' }}>
                             <tr>
                                 <th>Sr.No.</th>
                                 <th>First Name</th>
@@ -383,14 +419,14 @@ function Emp_Form() {
                                         return (
                                             <tr key={index}>
                                                 <td>{getIndex}</td>
-                                                <td>{item.first_name}</td>
+                                                <td><Link to={`/complain/${item.id}`}>{item.first_name}</Link></td>
                                                 <td>{item.last_name}</td>
                                                 <td>{item.hire_date}</td>
                                                 <td>{item.email}</td>
                                                 <td>{item.phone}</td>
                                                 <td>
-                                                    <button className='btn' onClick={() => delete_Data(item.id)}><DeleteIcon id="delicon"/></button>
-                                                    <button className='btn' onClick={() => { update_Data(item) }}><EditIcon id="editicon"/></button>
+                                                    <button className='btn' onClick={() => delete_Data(item.id)}><DeleteIcon id="delicon" /></button>
+                                                    <button className='btn' onClick={() => { update_Data(item) }}><EditIcon id="editicon" /></button>
                                                 </td>
                                             </tr>
                                         )
@@ -398,27 +434,29 @@ function Emp_Form() {
                             }
                         </tbody>
                     </table>
-                </div >
-                {/* table data show start */}
+                    {/* </div > */}
+                    {/* table data show start */}
 
-                {/* pagination */}
-                {
-                    getpageno > 1
-                        ? <div className='pagination justify-content-center border-primary'>
-                            <button className='btn btn-primary' key={Number} id='Number' onClick={() => prevClick(Number)} style={{ marginLeft: '2px' }} disabled={currentPage == 1 ? true : false}>  prev</button>
-                            {PageNumber.map((Number) => {
-                                return (
-                                    <button className='btn btn-primary' key={Number} id='Number' onClick={() => handleClick(Number)} style={{ marginLeft: '2px' }}>{Number}</button>
-                                )
-                            }
-                            )}
-                            <button className='btn btn-primary' key={Number} id='Number' onClick={() => NextClick(Number)} style={{ marginLeft: '2px' }} disabled={currentPage == getpageno ? true : false}>Next</button>
-                        </div>
-                        : null
+                    {/* pagination */}
+                    {
+                        getpageno > 1
+                            ? <div className='pagination justify-content-center border-primary'>
+                                <button className='btn btn-primary' key={Number} id='Number' onClick={() => prevClick(Number)} style={{ marginLeft: '2px' }} disabled={currentPage == 1 ? true : false}>  prev</button>
+                                {PageNumber.map((Number, index) => {
+                                    return (
+                                        // <button className='btn btn-primary' key={Number} id='Number' onClick={() => handleClick(Number)} style={{ marginLeft: '2px' }}>{Number}</button>
+                                        <button className='btn btn-primary' key={index} onClick={() => handleClick(Number)} style={{ marginLeft: '2px' }}>{Number}</button>
+                                    )
+                                }
+                                )}
+                                <button className='btn btn-primary' key={Number} id='Number' onClick={() => NextClick(Number)} style={{ marginLeft: '2px' }} disabled={currentPage == getpageno ? true : false}>Next</button>
+                            </div>
+                            : null
 
-                }
-                {/* pagination end */}
-
+                    }
+                    <button className='btn btn-primary' type='submit' onClick={GotoComp}><ArrowBackIcon /></button>
+                    {/* pagination end */}
+                </div>
             </div >
         </>
     );

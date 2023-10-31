@@ -5,6 +5,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 // import './CrdTask.css';
 import './CrdTask.css';
+import Emp_Form from '../Emp_Form/Emp_Form';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import "bootstrap";
@@ -26,6 +27,51 @@ function CrdTask() {
     const [searchState, setSearchState] = useState(false);
     const [errors, setErrors] = useState({});
 
+
+    // complaint...
+    const [Cmp_name, setCmp_name] = useState('');
+    const [Emp_name, setEmp_name] = useState("");
+    const [complain_email, setComplain_email] = useState('');
+    const [Complain_desc, setComplain_desc] = useState('');
+    const [complain_title, setComplain_title] = useState('');
+    // const [complain_data, setComplain_data] = useState([]);
+    const [empOptionsData, setEmpOptionsData] = useState([]);
+
+    let getCompData = () => {
+        axios.get('http://127.0.0.1:8000/api/companies/').then((res) => {
+            setEmpOptionsData(res.data);
+            console.log(res.data);
+        })
+    }
+
+
+    let complainSubmit = (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('company', JSON.parse(Cmp_name));
+        formData.append('employee', JSON.parse(Emp_name));
+        formData.append('email', complain_email);
+        formData.append('discriptions', Complain_desc);
+        formData.append('title', complain_title);
+        // if (validateForm()) {
+
+        axios.post(`http://127.0.0.1:8000/complains/`, formData).then((res) => {
+            // console.log(getCompData);
+            getCompData();
+            reset_Data();
+        })
+        successAlert();
+        // }
+    }
+    const SelectCmp_Name = (e) => {
+        setCmp_name(e.target.value);
+        const cmpId = JSON.parse(e.target.value);
+        axios.get(`http://127.0.0.1:8000/api/companiesemp/${cmpId}/`).then((res) => {
+            console.log(res.data);
+            setEmpOptionsData(res.data);
+        })
+    }
+
     // display search icon...hover
     // const [disbox, setDisbox] = useState(false);
     // const ShowSearchBox = () => {
@@ -42,7 +88,7 @@ function CrdTask() {
     const [searchQuery, setSearchQuery] = useState('');
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemPerPage = 2
+    const itemPerPage = 5;
     let getpageno = searchState ? Math.ceil(filteredData.length / itemPerPage) : Math.ceil(data.length / itemPerPage)
 
     // let PageNumber = [];
@@ -59,17 +105,44 @@ function CrdTask() {
     //     // i = i < currentPage ? currentPage - 1 : getpageno - 2;
     // }
 
-    let PageNumber = [], i = 1;
 
-    while (i <= getpageno) {
-        if (i <= 3 || i >= getpageno - 2 || i >= currentPage - 1 && i <= currentPage + 1) {
+    // while (i <= getpageno) {
+    //     if (i <= 3 || i >= getpageno - 2 || i >= currentPage - 1 && i <= currentPage + 1) {
+    //         PageNumber.push(i);
+    //         i++;
+    //     } else {
+    //         PageNumber.push(`...`);
+    //         i = i < currentPage ? currentPage - 1 : getpageno - 2;
+    //     }
+    // }
+
+    let PageNumber = [];
+    if (getpageno <= 7) {
+        for (let i = 1; i <= getpageno; i++) {
             PageNumber.push(i);
-            i++;
+        }
+    } else {
+        if (currentPage <= 4) {
+            for (let i = 1; i <= 5; i++) {
+                PageNumber.push(i);
+            }
+            PageNumber.push('...', getpageno);
+        } else if (currentPage > getpageno - 4) {
+            PageNumber.push(1, '...');
+            for (let i = getpageno - 4; i <= getpageno; i++) {
+                PageNumber.push(i);
+            }
         } else {
-            PageNumber.push(`...`);
-            i = i < currentPage ? currentPage - 1 : getpageno - 2;
+            PageNumber.push(1, '...');
+            // PageNumber.push(1);
+            for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                PageNumber.push(i);
+            }
+            PageNumber.push('...', getpageno);
         }
     }
+
+    // }
 
     let handleClick = (page) => {
         setCurrentPage(page);
@@ -80,6 +153,8 @@ function CrdTask() {
     let NextClick = (page) => {
         setCurrentPage(currentPage + 1);
     }
+
+
 
 
     const searchData = (e) => {
@@ -171,6 +246,12 @@ function CrdTask() {
         setAdd('');
         setDate('');
         setDesc('');
+        setCmp_name('');
+        setEmp_name('');
+        setComplain_email('');
+        setComplain_desc('');
+        setComplain_title('');
+
     }
     let delete_Data = (id) => {
         Swal.fire({
@@ -255,7 +336,7 @@ function CrdTask() {
                                     </div>}
                             </div> */}
                             {/* <!-- Button trigger modal --> */}
-                            <div className='col-sm-12 col-md-6 col-lg-6'>
+                            <div className='col-sm-12 col-md-4 col-lg-4'>
                                 <button type="button" id='nav-btn' class="btn" style={{ backgroundColor: 'white', color: 'black', fontFamily: 'Arial' }} data-bs-toggle="modal" data-bs-target="#exampleModal">
                                     Add User
                                 </button>
@@ -308,15 +389,91 @@ function CrdTask() {
                                     </div>
                                 </div>
                             </div>
-                            <div className='col-sm-12 col-md-6 col-lg-6' style={{ marginTop: '5px' }}>
+
+                            {/* complaint */}
+                            <div className='col-sm-12 col-md-4 col-lg-4'>
+                                <button type="button" id='nav-btn' class="btn" style={{ backgroundColor: 'white', color: 'black', fontFamily: 'Arial' }} data-bs-toggle="modal" data-bs-target="#exampleModal1">
+                                    complaint
+                                </button>
+
+                                {/* <!-- Modal --> */}
+                                <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Complain</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {/* form start */}
+                                                <form className='form'>
+                                                    <div className='row'>
+                                                        <div className='col-sm-12 col-md-6 col-lg-6'>
+                                                            <label className='form-label' htmlFor='Cmp_name'>Company Name</label>
+                                                            {/* <input type='text' className='form-control' name='Cmp_name' value={Cmp_name} onChange={(e) => setCmp_name(e.target.value)}/> */}
+                                                            <select className='form-control' name='Cmp_name' value={Cmp_name} onChange={SelectCmp_Name}>
+                                                                <option value="">Select company</option>
+                                                                {data.map((Citem, id) => {
+                                                                    return (
+                                                                        <option key={id} value={Citem.id}>
+                                                                            {Citem.name}</option>
+                                                                    )
+                                                                })}
+                                                            </select>
+                                                        </div>
+                                                        <div className='col-sm-12 col-md-6 col-lg-6'>
+                                                            <label className='form-label' htmlFor='Emp_name'>Employee Name</label>
+                                                            {/* <input type='date' className='form-control' name='date' value={date} onChange={(e) => setDate(e.target.value)} /> */}
+                                                            {/* <input type='text' className='form-control' name='Emp_name' value={Emp_name} onChange={(e) => setEmp_name(e.target.value)} /> */}
+
+                                                            <select className='form-control' name='Emp_name' value={Emp_name} onChange={(e) => setEmp_name(e.target.value)}>
+                                                                <option value=""> select employee</option>
+                                                                {empOptionsData.map((CitemP, id) => {
+                                                                    return (
+                                                                        <option key={CitemP.id} value={CitemP.id}>
+                                                                            {CitemP.first_name}</option>
+                                                                    )
+                                                                })}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div className='row'>
+                                                        <div className='col-sm-12 col-md-6 col-lg-6'>
+                                                            <label className='form-label' htmlFor='complain_email'>email</label>
+                                                            <input type='text' className='form-control' name='complain_email' value={complain_email} onChange={(e) => setComplain_email(e.target.value)} />
+                                                        </div>
+                                                        <div className='col-sm-12 col-md-6 col-lg-6'>
+                                                            <label className='form-label' htmlFor='complain_title'>title</label>
+                                                            <input type='text' className='form-control' name='complain_title' value={complain_title} onChange={(e) => setComplain_title(e.target.value)} />
+                                                        </div>
+                                                    </div>
+                                                    <div className='row'>
+                                                        <div className='col-sm-12 col-md-12 col-lg-12'>
+                                                            <label className='form-label' htmlFor='Complain_desc'>Description</label>
+                                                            <textarea class="form-control" placeholder="Leave a comment here" value={Complain_desc} id="floatingTextarea" onChange={(e) => setComplain_desc(e.target.value)} ></textarea>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                                {/* form end */}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" >Close</button>
+                                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onClick={complainSubmit}>Save changes</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='col-sm-12 col-md-4 col-lg-4' style={{ marginTop: '5px' }}>
                                 <div className='search-btn container' style={{ marginTop: '10px' }}>
                                     <input className='form-control border-primary text-primary' type="text" id="site-search" onChange={searchData} placeholder='Search Data' /><SearchIcon id="searchicon" style={{ width: '30px', height: '30px', marginTop: '5px', marginLeft: '-30px' }} />
                                     <hr className='hr hr-primary' />
                                 </div>
                             </div>
                         </div>
+                        {/* </div> */}
                     </nav>
-                </div>
+                </div >
                 {/* header end */}
 
                 {/* table data show start */}
@@ -374,15 +531,16 @@ function CrdTask() {
                     </table>
                 </div>
                 {/* table data show start */}
-
+                <br />
                 {/* pagination */}
                 {
                     getpageno > 1
                         ? <div className='pagination justify-content-center border-primary'>
                             <button className='btn btn-primary' key={Number} id='Number' onClick={() => prevClick(Number)} style={{ marginLeft: '2px' }} disabled={currentPage == 1 ? true : false}>  prev</button>
-                            {PageNumber.map((Number) => {
+                            {PageNumber.map((Number, index) => {
                                 return (
-                                    <button className='btn btn-primary' key={Number} id='Number' onClick={() => handleClick(Number)} style={{ marginLeft: '2px' }}>{Number}</button>
+                                    // <button className='btn btn-primary' key={Number} id='Number' onClick={() => handleClick(Number)} style={{ marginLeft: '2px' }}>{Number}</button>
+                                    <button className="btn btn-primary" key={index} onClick={() => handleClick(Number)} style={{ marginLeft: '2px' }} > {Number} </button>
                                 )
                             }
                             )}
