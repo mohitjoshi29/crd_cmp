@@ -55,7 +55,7 @@ function CrdTask() {
         formData.append('title', complain_title);
         // if (validateForm()) {
 
-        axios.post(`http://127.0.0.1:8000/complains/`, formData).then((res) => {
+        axios.post(`http://127.0.0.1:8000/api/complains/`, formData).then((res) => {
             // console.log(getCompData);
             getCompData();
             reset_Data();
@@ -175,7 +175,17 @@ function CrdTask() {
 
     let getData = () => {
         axios.get('http://127.0.0.1:8000/api/companies/').then((res) => {
-            setData(res.data);
+            setData(res.data.sort((a, b) => {
+                    const fir_name = a.name.toLowerCase();
+                    const sec_name = b.name.toLowerCase();
+                    if (fir_name < sec_name) {
+                      return -1;
+                    }
+                    if (fir_name > sec_name) {
+                      return 1;
+                    }
+                    return 0;
+            }));
         })
     }
     useEffect(() => {

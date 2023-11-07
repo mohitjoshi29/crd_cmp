@@ -23,7 +23,7 @@ export default function Complain() {
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`http://127.0.0.1:8000/complains/${id}/`).then((res) => {
+                axios.delete(`http://127.0.0.1:8000/api/complains/${id}/`).then((res) => {
                     Swal.fire({
                         title: 'deleted',
                         text: "data deleted",
