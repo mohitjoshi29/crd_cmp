@@ -7,12 +7,14 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // import './Emp_Form.css';
 import './Emp_Form.css';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import "bootstrap"
 import { Modal } from 'bootstrap';
 import * as bootstrap from 'bootstrap';
 import { Form, Link, useParams, useNavigate } from 'react-router-dom';
 import CrdTask from '../CrdTask/CrdTask';
+import { get_Api,post_Api,Update_Api,delete_Api } from '../Action/Emp_Action';
 window.bootstrap = bootstrap;
 // import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +24,9 @@ window.bootstrap = bootstrap;
 
 
 function Emp_Form() {
+    const dispatch = useDispatch();
+    const Get_API_EmFun = useSelector((state) => state.get_func_emp.Emp_list)
+
     const { id } = useParams()
     const [fName, setFName] = useState('');
     const [lName, setLName] = useState('');
@@ -169,14 +174,21 @@ function Emp_Form() {
         return Object.keys(newErrors).length === 0;
     };
 
-    let getData = () => {
-        axios.get(`http://127.0.0.1:8000/api/companiesemp/${id}/`).then((res) => {
-            setData(res.data);
-        })
-        console.log(id);
-    }
+    // let getData = () => {
+    //     axios.get(`http://127.0.0.1:8000/api/companiesemp/${id}/`).then((res) => {
+    //         setData(res.data);
+    //     })
+    //     console.log(id);
+    // }
+    useEffect(()=>{
+        if(Get_API_EmFun!==null){
+            setData(Get_API_EmFun);  
+        }
+    },[Get_API_EmFun])
+
     useEffect(() => {
-        getData();
+        // getData();
+        dispatch(get_Api(id))
     }, [])
 
 
@@ -193,20 +205,22 @@ function Emp_Form() {
         // 
         if (isUpdate && selectedId) {
             if (validateForm()) {
-                axios.put(`http://127.0.0.1:8000/api/employees/${selectedId}/`, formData).then((res) => {
-                    getData();
-                    reset_Data();
-                    setIsUpdate(false);
-                    setSelectedId(null);
-                });
+                // axios.put(`http://127.0.0.1:8000/api/employees/${selectedId}/`, formData).then((res) => {
+                // getData();
+                dispatch(Update_Api(selectedId,formData,id))
+                reset_Data();
+                setIsUpdate(false);
+                setSelectedId(null);
+                // });
                 successAlert();
             }
         } else {
             if (validateForm()) {
-                axios.post(`http://127.0.0.1:8000/api/employees/`, formData).then((res) => {
-                    getData();
-                    reset_Data();
-                })
+                // axios.post(`http://127.0.0.1:8000/api/employees/`, formData).then((res) => {
+                //     getData();
+                dispatch(post_Api(formData,id))
+                reset_Data();
+                // })
                 successAlert();
             }
         }
@@ -218,7 +232,7 @@ function Emp_Form() {
         setDate('');
         setContact('');
     }
-    let delete_Data = (id) => {
+    let delete_Data = (idd) => {
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -229,16 +243,17 @@ function Emp_Form() {
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`http://127.0.0.1:8000/api/employees/${id}/`).then((res) => {
-                    Swal.fire({
-                        title: 'deleted',
-                        text: "data deleted",
-                        icon: 'success',
-                        timer: 3000,
-                        showConfirmButton: false,
-                    })
-                    getData();
-                })
+                // axios.delete(`http://127.0.0.1:8000/api/employees/${id}/`).then((res) => {
+                //     Swal.fire({
+                //         title: 'deleted',
+                //         text: "data deleted",
+                //         icon: 'success',
+                //         timer: 3000,
+                //         showConfirmButton: false,
+                //     })
+                //     getData();
+                // })
+                dispatch(delete_Api(id,idd));
             }
         })
 

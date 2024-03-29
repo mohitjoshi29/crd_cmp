@@ -5,14 +5,18 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useDispatch,useSelector } from 'react-redux';
 import './Complain.css'
+import { delete_cmp, get_cmp_API } from '../Action/Complain_Action';
 
 export default function Complain() {
     const { id } = useParams()
     const [comData, setCompData] = useState([]);
     const Navgt = useNavigate()
+    const dispatch=useDispatch();
+    const Get_API_Cmp=useSelector((state)=>state.get_func_cmp.cmpList)
 
-    const DeleteData = (id) => {
+    const DeleteData = (idd) => {
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -23,31 +27,38 @@ export default function Complain() {
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`http://127.0.0.1:8000/api/complains/${id}/`).then((res) => {
-                    Swal.fire({
-                        title: 'deleted',
-                        text: "data deleted",
-                        icon: 'success',
-                        timer: 3000,
-                        showConfirmButton: false,
-                    })
-                    fetchdata();
-                })
+                // axios.delete(`http://127.0.0.1:8000/api/complains/${id}/`).then((res) => {
+                //     Swal.fire({
+                //         title: 'deleted',
+                //         text: "data deleted",
+                //         icon: 'success',
+                //         timer: 3000,
+                //         showConfirmButton: false,
+                //     })
+                //     fetchdata();
+                // })
+                dispatch(delete_cmp(id,idd))
             }
         })
 
     }
 
 
-    const fetchdata = () => {
-        axios.get(`http://127.0.0.1:8000/api/empcomplains/${id}/`).then((res) => {
-            setCompData(res.data);
-            console.log(res.data);
-        })
+    // const fetchdata = () => {
+    //     axios.get(`http://127.0.0.1:8000/api/empcomplains/${id}/`).then((res) => {
+    //         setCompData(res.data);
+    //         console.log(res.data);
+    //     })
 
-    }
+    // }
     useEffect(() => {
-        fetchdata()
+        if(Get_API_Cmp!==null){
+            setCompData(Get_API_Cmp)
+        }
+    }, [Get_API_Cmp])
+    useEffect(() => {
+        // fetchdata()
+            dispatch(get_cmp_API(id))
     }, [])
     const previousBtn = () => {
         window.history.back();

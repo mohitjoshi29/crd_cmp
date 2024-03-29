@@ -4,6 +4,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 // import './CrdTask.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { DELETE_API, GET_API, POST_API, UPDATE_API } from '../Action/Action';
 import './CrdTask.css';
 import Emp_Form from '../Emp_Form/Emp_Form';
 import { useEffect, useState } from 'react';
@@ -12,10 +14,11 @@ import "bootstrap";
 import { Modal } from 'bootstrap';
 import * as bootstrap from 'bootstrap';
 import { Link } from 'react-router-dom';
+import { post_cmp } from '../Action/Complain_Action';
+import { get_SCN } from '../Action/SelCmpName_Action';
 window.bootstrap = bootstrap;
 // import 'sweetalert2/src/sweetalert2.scss'
 // import Swal from 'sweetalert2/dist/sweetalert2.js'
-
 
 function CrdTask() {
     const [name, setName] = useState('');
@@ -37,12 +40,20 @@ function CrdTask() {
     // const [complain_data, setComplain_data] = useState([]);
     const [empOptionsData, setEmpOptionsData] = useState([]);
 
-    let getCompData = () => {
-        axios.get('http://127.0.0.1:8000/api/companies/').then((res) => {
-            setEmpOptionsData(res.data);
-            console.log(res.data);
-        })
-    }
+    const dispatch = useDispatch();
+    const GetAPIData = useSelector((state) => state.get_func.list)
+
+    const GetAPICmp = useSelector((state) => state.get_func_cmp.cmpList)
+
+    const GetAPISELCMPNAME = useSelector((state) => state.get_SCName_func.list_ScmpName)
+
+    // get api............
+    // let getCompData = () => {
+    //     axios.get('http://127.0.0.1:8000/api/companies/').then((res) => {
+    //         setEmpOptionsData(res.data);
+    //         console.log(res.data);
+    //     })
+    // }
 
 
     let complainSubmit = (e) => {
@@ -55,21 +66,24 @@ function CrdTask() {
         formData.append('title', complain_title);
         // if (validateForm()) {
 
-        axios.post(`http://127.0.0.1:8000/api/complains/`, formData).then((res) => {
-            // console.log(getCompData);
-            getCompData();
-            reset_Data();
-        })
+        // axios.post(`http://127.0.0.1:8000/api/complains/`, formData).then((res) => {
+        dispatch(post_cmp(formData));
+        // console.log(getCompData);
+        // getCompData();
+
+        reset_Data();
+        // })
         successAlert();
         // }
     }
     const SelectCmp_Name = (e) => {
         setCmp_name(e.target.value);
         const cmpId = JSON.parse(e.target.value);
-        axios.get(`http://127.0.0.1:8000/api/companiesemp/${cmpId}/`).then((res) => {
-            console.log(res.data);
-            setEmpOptionsData(res.data);
-        })
+        // axios.get(`http://127.0.0.1:8000/api/companiesemp/${cmpId}/`).then((res) => {
+        dispatch(get_SCN(cmpId))
+        // console.log(res.data);
+        // setEmpOptionsData(res.data);
+        // })
     }
 
     // display search icon...hover
@@ -173,23 +187,46 @@ function CrdTask() {
         }
     }
 
-    let getData = () => {
-        axios.get('http://127.0.0.1:8000/api/companies/').then((res) => {
-            setData(res.data.sort((a, b) => {
-                    const fir_name = a.name.toLowerCase();
-                    const sec_name = b.name.toLowerCase();
-                    if (fir_name < sec_name) {
-                      return -1;
-                    }
-                    if (fir_name > sec_name) {
-                      return 1;
-                    }
-                    return 0;
-            }));
-        })
-    }
+    // ascending order by name...
+    // let getData = () => {
+    //     axios.get('http://127.0.0.1:8000/api/companies/').then((res) => {
+    //         setData(res.data.sort((a, b) => {
+    //             const fir_name = a.name.toLowerCase();
+    //             const sec_name = b.name.toLowerCase();
+    //             if (fir_name < sec_name) {
+    //                 return -1;
+    //             }
+    //             if (fir_name > sec_name) {
+    //                 return 1;
+    //             }
+    //             return 0;
+    //         }));
+    //     })
+    // }
+
     useEffect(() => {
-        getData();
+        if (GetAPIData !== null) {
+            setData(GetAPIData);
+        }
+    }, [GetAPIData])
+
+    useEffect(() => {
+        if (GetAPICmp !== null) {
+            setData(GetAPICmp);
+        }
+    }, [GetAPICmp])
+
+    useEffect(() => {
+        if (GetAPISELCMPNAME !== null) {
+            // setData(GetAPISELCMPNAME);
+            setEmpOptionsData(GetAPISELCMPNAME);
+        }
+    }, [GetAPISELCMPNAME])
+
+    useEffect(() => {
+        // getData();
+        dispatch(GET_API());
+        // dispatch(get_cmp_API());
     }, [])
 
     const validateForm = () => {
@@ -233,21 +270,27 @@ function CrdTask() {
         // 
         if (isUpdate && selectedId) {
             if (validateForm()) {
-                axios.put(`http://127.0.0.1:8000/api/companies/${selectedId}/`, formData).then((res) => {
-                    getData();
-                    reset_Data();
-                    setIsUpdate(false);
-                    setSelectedId(null);
-                });
+                // axios.put(`http://127.0.0.1:8000/api/companies/${selectedId}/`, formData).then((res) => {
+                dispatch(UPDATE_API(selectedId, formData))
+                // getData();
+                reset_Data();
+                setIsUpdate(false);
+                setSelectedId(null);
+                // });
                 successAlert();
             }
         } else {
             if (validateForm()) {
-                axios.post('http://127.0.0.1:8000/api/companies/', formData).then((res) => {
-                    getData();
-                    reset_Data();
-                })
+                // axios.post('http://127.0.0.1:8000/api/companies/', formData).then((res) => {
+                dispatch(POST_API(formData))
+                // getData();
+                dispatch(GET_API())
+                reset_Data();
+                // })
                 successAlert();
+            }
+            else {
+                InvaliAlert();
             }
         }
     }
@@ -274,16 +317,17 @@ function CrdTask() {
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`http://127.0.0.1:8000/api/companies/${id}/`).then((res) => {
-                    Swal.fire({
-                        title: 'deleted',
-                        text: "data deleted",
-                        icon: 'success',
-                        timer: 3000,
-                        showConfirmButton: false,
-                    })
-                    getData();
-                })
+                // axios.delete(`http://127.0.0.1:8000/api/companies/${id}/`).then((res) => {
+                //     Swal.fire({
+                //         title: 'deleted',
+                //         text: "data deleted",
+                //         icon: 'success',
+                //         timer: 3000,
+                //         showConfirmButton: false,
+                //     })
+                //     // getData();
+                dispatch(DELETE_API(id));
+                // })
             }
         })
 
@@ -300,7 +344,6 @@ function CrdTask() {
         setDesc(data2.description);
 
         let myModal = new bootstrap.Modal(document.getElementById('exampleModal'));
-        // debugger
         // const modal = Modal.getOrCreateInstance(myModal);
         myModal.show();
 
@@ -313,6 +356,14 @@ function CrdTask() {
             timer: 3000,
             showConfirmButton: false,
         })
+    }
+    let InvaliAlert = () => {
+        Swal.fire({
+            icon: "error",
+            title: "Empty Fields",
+            text: "Please Fill All Fields Clearly",
+            // footer: '<a href="#">Why do I have this issue?</a>'
+        });
     }
 
     // useEffect(()=>{
@@ -524,7 +575,6 @@ function CrdTask() {
                                         return (
                                             <tr key={index.id}>
                                                 <td>{getIndex}</td>
-                                                {/* debugger */}
                                                 <td><Link to={`/company/${item.id}`}>{item.name}</Link></td>
                                                 <td>{item.founded_date}</td>
                                                 <td>{item.headquarters_location}</td>
